@@ -298,8 +298,13 @@ select.input-field {
 
 .stat-card p {
     font-size: var(--font-size-sm);
-    opacity: 0.9;
+    opacity: 1;
     margin: 0;
+    background-color: rgba(0, 0, 0, 0.25);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 4px;
+    display: inline-block;
 }
 
 .stat-card-value {
