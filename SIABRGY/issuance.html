@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barangay DIPS - Document Issuance</title>
+    <link rel="stylesheet" href="src/styles/global.css">
+    <link rel="stylesheet" href="src/styles/dashboard.css">
+    <link rel="stylesheet" href="src/styles/document-issuance.css">
+    <link rel="stylesheet" href="src/styles/components.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="sidebar-logo"><img src="images/BRGYLOGO.png" alt="Barangay Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
+            <a href="dashboard.html" class="sidebar-icon" title="Dashboard">📊</a>
+            <a href="issuance.html" class="sidebar-icon active" title="Document Issuance">📄</a>
+            <a href="analytics.html" class="sidebar-icon" title="Analytics">📈</a>
+            <a href="insights.html" class="sidebar-icon" title="Insights">📊</a>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <div class="header-title">Barangay DIPS</div>
+                </div>
+                <div class="header-right">
+                    <div class="header-date" id="headerDate">Mon, February 9, 2026</div>
+                    <button class="header-icon-btn" id="notificationBtn" title="Notifications">🔔</button>
+                    <button class="header-icon-btn" id="signOutBtn" title="Sign Out" style="cursor: pointer; position: relative;"><img src="images/BRGYLOGO.png" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;"></button>
+                </div>
+            </div>
+            <div class="page-content container">
+                <div class="page-header">
+                    <h1>Document Issuance</h1>
+                    <p>Issue documents with payment verification</p>
+                </div>
+                <!-- stepper progress card -->
+                <div class="stepper-card">
+                    <div class="stepper">
+                        <div class="step active">
+                            <div class="circle">1</div>
+                            <div class="label">Select Resident</div>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step">
+                            <div class="circle">2</div>
+                            <div class="label">Choose Document</div>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step">
+                            <div class="circle">3</div>
+                            <div class="label">Details & Fees</div>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step">
+                            <div class="circle">4</div>
+                            <div class="label">Payment</div>
+                        </div>
+                        <div class="line"></div>
+                        <div class="step">
+                            <div class="circle">5</div>
+                            <div class="label">Preview & Issue</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- residency selection panel with search and results -->
+                <div class="dashboard-section" id="select-resident-section">
+                    <h2>Select Resident</h2>
+                    <div style="margin-bottom:var(--spacing-sm);">
+                        <select id="statusFilter" class="input-field" style="width:150px;">
+                            <option value="">All status</option>
+                            <option value="CLEARED">Cleared</option>
+                            <option value="BLOCKED">Blocked</option>
+                        </select>
+                    </div>
+                    <input id="residentSearch" type="text" class="input-field" placeholder="Search by name..." style="width:100%;" />
+                    <div id="residentResults" class="resident-results"></div>
+                    <div id="selectedCard"></div>
+                </div>
+
+                <!-- choose document section (initially hidden) -->
+                <div class="dashboard-section" id="choose-document-section" style="display:none;">
+                    <h2>Choose Document</h2>
+                    <p>Select the type of document to issue for <span id="chosenResidentName"></span></p>
+                    <!-- placeholder grid similar to React version -->
+                    <div id="documentGrid" class="document-grid">
+                        <!-- documents will be injected by script -->
+                    </div>
+                    <div class="form-actions" style="margin-top:var(--spacing-lg);">
+                        <button class="btn btn-secondary" id="backToResident">Back</button>
+                    </div>
+                </div>
+
+                <!-- details & fees section (initially hidden) -->
+                <div class="dashboard-section" id="details-fees-section" style="display:none;">
+                    <h2>Details &amp; Fees</h2>
+                    <div class="details-panel">
+                        <div class="details-info">
+                            <h3>Selected Document: <span id="detailDocumentTitle"></span></h3>
+                            <p><strong>Control Number:</strong> <span id="detailControlNumber"></span></p>
+                            <p><strong>Issued On:</strong> <span id="detailIssuedOn"></span></p>
+                            <p><strong>Full Name:</strong> <span id="detailFullName"></span></p>
+                            <p><strong>Address:</strong> <span id="detailAddress"></span></p>
+                            <p><strong>Date of Birth:</strong> <span id="detailDOB"></span></p>
+                            <div class="form-group">
+                                <label>Purpose:</label>
+                                <input type="text" id="detailPurpose" class="input-field" />
+                            </div>
+                            <div class="form-group">
+                                <label>Remarks:</label>
+                                <textarea id="detailRemarks" class="input-field" style="height:80px;"></textarea>
+                            </div>
+                        </div>
+                        <div class="details-fee-summary">
+                            <div class="fee-summary-header">Fee Summary</div>
+                            <div class="fee-row"><span>Fee :</span> <span id="detailFee"></span></div>
+                            <div class="fee-row"><span>Total Amount:</span> <span id="detailFee"></span></div>
+                            <button class="btn btn-primary" id="proceedToPayment">Proceed to Payment</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- payment section (initially hidden) -->
+                <div class="dashboard-section" id="payment-section" style="display:none;">
+                    <h2>Payment</h2>
+                    <div class="payment-panel">
+                        <div class="payment-details">
+                            <div class="payment-date" id="paymentDate"></div>
+                            <p><strong>Document:</strong> <span id="paymentDocument"></span></p>
+                            <p><strong>Amount Received:</strong>
+                                <input type="text" id="paymentAmount" class="input-field" style="width:120px;" />
+                            </p>
+                            <p class="payment-collected">Collected by: Admin</p>
+                        </div>
+                        <div class="form-actions" style="margin-top:var(--spacing-lg);">
+                            <button class="btn btn-secondary" id="backToDetails">Back</button>
+                            <button class="btn btn-primary" id="confirmPayment">Confirm Payment</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- preview & issue section -->
+                <div class="dashboard-section" id="preview-section" style="display:none;">
+                    <h2>Preview &amp; Issue</h2>
+                    <div class="preview-container">
+                        <div class="preview-window" id="previewWindow">
+                            <!-- place your final preview image here; it should live in the `images`
+                                 subdirectory.  example filename is DUMMY.PNG as you've added. -->
+                            <img src="images/DUMMY.PNG" alt="Document preview" style="width:100%; height:auto;" />
+                        </div>
+                        <div class="preview-actions">
+                            <div class="step-circle large">5</div>
+                            <button class="btn btn-primary" id="issueDocument">Issue Document</button>
+                            <button class="btn btn-outline" id="printDocument">Print Document</button>
+                            <button class="btn btn-danger" id="cancelProcess">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Confirmation Modal -->
+    <div id="paymentConfirmationModal" class="payment-modal">
+        <div class="payment-modal-content">
+            <h2>Confirm Payment</h2>
+            <p id="paymentMessage">Payment confirmed for <strong id="residentNameModal"></strong>, document <strong id="documentTitleModal"></strong></p>
+            <div class="payment-modal-buttons">
+                <button class="btn-cancel" onclick="closePaymentModal()">Cancel</button>
+                <button class="btn-confirm" onclick="confirmPayment()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <style>
+        /* Payment Modal Styles */
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .payment-modal.show {
+            display: flex;
+        }
+
+        .payment-modal-content {
+            background-color: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 500px;
+            max-width: 90vw;
+            text-align: center;
+        }
+
+        .payment-modal-content h2 {
+            margin: 0 0 16px 0;
+            color: #1f2937;
+            font-size: 22px;
+        }
+
+        .payment-modal-content p {
+            margin: 0 0 32px 0;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .payment-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .btn-cancel,
+        .btn-confirm {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .btn-cancel:hover {
+            background-color: #e5e7eb;
+        }
+
+        .btn-confirm {
+            background-color: #10b981;
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            background-color: #059669;
+        }
+
+        /* Toast Message Styles */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 3000;
+        }
+
+        .toast {
+            background-color: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            font-weight: 500;
+            min-width: 300px;
+            max-width: 500px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast.success {
+            background-color: #10b981;
+        }
+
+        .toast.error {
+            background-color: #EF4444;
+        }
+
+        .toast.warning {
+            background-color: #F59E0B;
+        }
+
+        .toast.info {
+            background-color: #3B82F6;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast.removing {
+            animation: slideOut 0.3s ease-out;
+        }
+    </style>
+
+    <script>
+        // Toast message function
+        function showToast(message, type = 'success', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
+
+            // Auto remove toast after duration
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, duration);
+        }
+
+        // Payment confirmation modal functions
+        function showPaymentConfirmationModal(residentName, documentTitle) {
+            document.getElementById('residentNameModal').textContent = residentName;
+            document.getElementById('documentTitleModal').textContent = documentTitle;
+            document.getElementById('paymentConfirmationModal').classList.add('show');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('paymentConfirmationModal').classList.remove('show');
+        }
+
+        function confirmPayment() {
+            document.getElementById('paymentConfirmationModal').classList.remove('show');
+            populatePreview();
+            goToStep(5);
+        }
+
+        // Close modal on background click
+        document.getElementById('paymentConfirmationModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePaymentModal();
+            }
+        });
+
+        // simple resident data for static page
+        const residents = [
+            { id: 1, name: 'Dela Cruz, Adrian M.', address: '#27 Diamond Street, Margeret Subd. Caloocan City', birthDate: 'October 1, 1968', age: 58, civilStatus: 'Married', voterStatus: 'Registered Voter', status: 'CLEARED' },
+            { id: 2, name: 'Dela Cruz, Juan C.', address: '#28 Diamond Street, Margeret Subd. Caloocan City', birthDate: 'May 1, 1998', age: 28, civilStatus: 'Single', voterStatus: 'Registered Voter', status: 'BLOCKED', blockedReasons: ['Active Case', 'Theft', 'Blotter'] },
+            { id: 3, name: 'Dela Cruz, Zion A.', address: '#29 Diamond Street, Margeret Subd. Caloocan City', birthDate: 'June 04, 1970', age: 56, civilStatus: 'Married', voterStatus: 'Registered Voter', status: 'CLEARED' }
+        ];
+        let selectedResident = null;
+        let selectedDocument = null;
+
+        const searchInput = document.getElementById('residentSearch');
+        const statusFilter = document.getElementById('statusFilter');
+        const resultsDiv = document.getElementById('residentResults');
+        const cardDiv = document.getElementById('selectedCard');
+
+        function renderList() {
+            const term = searchInput.value.toLowerCase();
+            const status = statusFilter.value;
+            resultsDiv.innerHTML = '';
+            residents.filter(r => {
+                const matchesName = r.name.toLowerCase().includes(term);
+                const matchesStatus = !status || r.status === status;
+                return matchesName && matchesStatus;
+            }).forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'resident-item' + (selectedResident?.id === r.id ? ' selected' : '');
+                item.innerHTML = `
+                    <div class="resident-avatar">${r.name.charAt(0)}</div>
+                    <div class="resident-info">
+                        <div class="resident-name">${r.name}</div>
+                        <div class="resident-address">${r.address}</div>
+                        <div class="resident-details">
+                            <div class="resident-detail"><span class="resident-detail-label">Birth Date:</span><span class="resident-detail-value">${r.birthDate}</span></div>
+                            <div class="resident-detail"><span class="resident-detail-label">Age:</span><span class="resident-detail-value">${r.age}</span></div>
+                            <div class="resident-detail"><span class="resident-detail-label">Civil Status:</span><span class="resident-detail-value">${r.civilStatus}</span></div>
+                            <div class="resident-detail"><span class="resident-detail-label">Voter's Status:</span><span class="resident-detail-value">${r.voterStatus}</span></div>
+                        </div>
+                    </div>`;
+                item.onclick = () => selectResident(r);
+                resultsDiv.appendChild(item);
+            });
+        }
+
+        function selectResident(res) {
+            selectedResident = res;
+            renderList();
+            renderCard();
+        }
+
+        function renderCard() {
+            if (!selectedResident) {
+                cardDiv.innerHTML = '';
+                return;
+            }
+            const r = selectedResident;
+            let html = `
+                <div class="resident-card ${r.status.toLowerCase()}">
+                    <div class="resident-card-avatar">${r.name.charAt(0)}</div>
+                    <div class="resident-card-content">
+                        <div class="resident-card-header">
+                            <div class="resident-card-name">${r.name}</div>
+                            <div class="resident-card-badge">${r.voterStatus}</div>
+                        </div>
+                        <div class="resident-card-address">${r.address}</div>
+                        <div class="status-badge ${r.status.toLowerCase()}">Status: ${r.status}</div>
+            `;
+            if (r.status === 'BLOCKED' && r.blockedReasons) {
+                html += `<div class="blocked-reasons">Reason: ${r.blockedReasons.join(' - ')}</div>`;
+            }
+            html += `</div></div>`;
+            if (r.status !== 'BLOCKED') {
+                html += `<div class="form-actions" style="margin-top:var(--spacing-lg);"><button class="btn btn-primary" id="nextBtn">Next Step</button></div>`;
+            } else {
+                html += `<div class="form-actions" style="margin-top:var(--spacing-lg);"><button class="btn btn-primary" disabled>Next Step</button></div>`;
+            }
+            cardDiv.innerHTML = html;
+        }
+
+        searchInput.addEventListener('input', renderList);
+        statusFilter.addEventListener('change', renderList);
+        renderList();
+
+        // stepper manipulation helpers
+        function setActiveStep(stepNumber) {
+            const steps = document.querySelectorAll('.stepper .step');
+            steps.forEach((step, idx) => {
+                if (idx + 1 === stepNumber) {
+                    step.classList.add('active');
+                } else {
+                    step.classList.remove('active');
+                }
+            });
+        }
+
+        // simple document set used on static page
+        const documents = [
+            { id: 1, title: 'BARANGAY CLEARANCE FOR INDIVIDUAL', description: 'Official document certifying a resident has no derogatory record in the barangay', fee: '₱50.00', isFree: false, icon: '📋' },
+            { id: 2, title: 'BARANGAY RESIDENCY CERTIFICATE', description: 'Proof that an individual is a resident and bonafide member of the barangay', fee: '₱50.00', isFree: false, icon: '🏠' },
+            { id: 3, title: 'BARANGAY INDIGENCY CERTIFICATE FOR INDIGENT PERSON/S', description: 'Certifies the economic status of applicants incapable to meet social services', fee: 'FREE', isFree: true, icon: '🤝' },
+            { id: 4, title: 'CERTIFICATE OF GOOD MORAL CHARACTER', description: 'Attests to the good character and upright standing of a resident', fee: '₱50.00', isFree: false, icon: '⭐' },
+            { id: 5, title: 'BARANGAY CERTIFICATE FOR LOW INCOME/NO INCOME', description: 'Certifies the financial status of a resident for financial assistance', fee: 'FREE', isFree: true, icon: '📊' },
+            { id: 6, title: 'BARANGAY CERTIFICATE FOR FIRST TIME JOBSEEKER AND OATH OF UNDERTAKING', description: 'Issued to new graduates and jobseekers as per government document requirement', fee: 'FREE', isFree: true, icon: '📃' },
+            { id: 7, title: 'BARANGAY CERTIFICATIONS FOR INDIVIDUAL/S', description: 'A general certification issued and required as proof at application for legal age', fee: '₱50.00', isFree: false, icon: '✅' },
+            { id: 8, title: 'BARANGAY CERTIFICATIONS FOR OTHER GOVERNMENT/PRIVATE AGENCY', description: 'Specifically addressed to institutions, agencies, GOOs, and private entities', fee: '₱50.00', isFree: false, icon: '🏛️' },
+            { id: 9, title: 'BARANGAY CLEARANCE FOR ELECTRIC/WATER/INTERNET', description: 'A provable requirement for the installation of utilities and services', fee: '₱50.00', isFree: false, icon: '⚡' },
+            { id: 10, title: 'BARANGAY CLEARANCE FOR BUILDING/WORK/FENCING/EXCAVATION PERMIT APPLICATION FOR RESIDENTIAL', description: 'Grants permission for construction and physical improvements within the residential area', fee: '₱50.00', isFree: false, icon: '🏗️' },
+            { id: 11, title: 'BARANGAY CERTIFICATE FOR TRANSFER OF RECORD/RESIDENCY', description: 'Issued when a resident permanently moves out to another barangay or municipality', fee: '₱50.00', isFree: false, icon: '📄' },
+            { id: 12, title: 'BARANGAY CERTIFICATE FOR NON-RESIDENT INDIVIDUALS', description: 'For persons not living in the barangay but requiring certification for local transactions', fee: '₱50.00', isFree: false, icon: '🏠' },
+            { id: 13, title: 'CERTIFICATE OF CLOSE SHOP OF BUSINESS', description: 'Official attestation that a business establishment has permanently ceased its operations', fee: '₱50.00', isFree: false, icon: '🔒' }
+        ];
+
+        function renderDocumentGrid() {
+            const grid = document.getElementById('documentGrid');
+            grid.innerHTML = '';
+            documents.forEach(doc => {
+                const card = document.createElement('div');
+                card.className = 'document-card' + (selectedDocument?.id === doc.id ? ' selected' : '');
+                card.dataset.id = doc.id;
+                card.innerHTML = `
+                    <div class="document-icon">${doc.icon}</div>
+                    <div class="document-title">${doc.title}</div>
+                    <div class="document-description">${doc.description}</div>
+                    <div class="document-fee ${doc.isFree ? 'free' : 'paid'}">${doc.fee}</div>
+                    <button class="btn btn-primary btn-sm select-doc">Select Document</button>
+                `;
+                // attach click handler
+                card.querySelector('.select-doc').addEventListener('click', () => selectDocument(doc));
+                grid.appendChild(card);
+            });
+        }
+
+        let controlNumber = '';
+        let issueDate = '';
+
+        function selectDocument(doc) {
+            selectedDocument = doc;
+            // generate control number and issue date
+            controlNumber = 'BRGY-' + Math.floor(Math.random() * 9000 + 1000);
+            const now = new Date();
+            issueDate = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+            renderDocumentGrid();
+            populateDetails();
+            goToStep(3);
+        }
+
+        function populateDetails() {
+            document.getElementById('detailDocumentTitle').textContent = selectedDocument.title;
+            document.getElementById('detailControlNumber').textContent = controlNumber;
+            document.getElementById('detailIssuedOn').textContent = issueDate;
+            document.getElementById('detailFullName').textContent = selectedResident.name;
+            document.getElementById('detailAddress').textContent = selectedResident.address;
+            document.getElementById('detailDOB').textContent = selectedResident.birthDate;
+            document.getElementById('detailFee').textContent = selectedDocument.fee;
+        }
+
+        function populatePayment() {
+            const now = new Date();
+            document.getElementById('paymentDate').textContent = now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' });
+            document.getElementById('paymentDocument').textContent = selectedDocument.title;
+            document.getElementById('paymentAmount').value = selectedDocument.fee;
+        }
+
+        function handleNext() {
+            if (selectedResident && selectedResident.status !== 'BLOCKED') {
+                document.getElementById('chosenResidentName').textContent = selectedResident.name;
+                goToStep(2);
+            }
+        }
+
+        function goToStep(step) {
+            // hide/show sections based on step
+            document.getElementById('select-resident-section').style.display = step === 1 ? '' : 'none';
+            document.getElementById('choose-document-section').style.display = step === 2 ? '' : 'none';
+            document.getElementById('details-fees-section').style.display = step === 3 ? '' : 'none';
+            document.getElementById('payment-section').style.display = step === 4 ? '' : 'none';
+            document.getElementById('preview-section').style.display = step === 5 ? '' : 'none';
+            setActiveStep(step);
+            if (step === 2) {
+                renderDocumentGrid();
+            }
+            if (step === 3) {
+                // details already populated when document chosen
+            }
+        }
+
+        document.getElementById('backToResident').addEventListener('click', () => goToStep(1));
+        document.getElementById('backToDetails').addEventListener('click', () => goToStep(3));
+        const proceedBtn = document.getElementById('proceedToPayment');
+        if (proceedBtn) {
+            proceedBtn.addEventListener('click', () => {
+                populatePayment();
+                goToStep(4);
+            });
+        }
+        document.getElementById('confirmPayment').addEventListener('click', () => {
+            showPaymentConfirmationModal(selectedResident.name, selectedDocument.title);
+        });
+
+        function populatePreview() {
+            // for now we show a dummy image; in a real implementation this
+            // function would request or generate the proper document preview
+            // (e.g. via Canvas, PDF library, or server endpoint) and set the
+            // src accordingly.
+            const img = document.querySelector('#previewWindow img');
+            if (img) {
+                // dummy placeholder file stored in local images folder
+                img.src = 'images/preview-sample.png';
+            }
+        }
+
+        document.getElementById('issueDocument').addEventListener('click', () => {
+            showToast('Document issued successfully!', 'success', 3000);
+            setTimeout(() => {
+                goToStep(1);
+            }, 3000);
+        });
+        document.getElementById('printDocument').addEventListener('click', () => {
+            window.print();
+        });
+        document.getElementById('cancelProcess').addEventListener('click', () => {
+            if (confirm('Cancel issuance and return to start?')) goToStep(1);
+        });
+
+        // delegate click events for the Next Step button
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'nextBtn') {
+                handleNext();
+            }
+        });
+
+        // make entire card area clickable too
+        cardDiv.addEventListener('click', function(e) {
+            // ignore clicks on disabled button or the card content itself if blocked
+            if (selectedResident && selectedResident.status !== 'BLOCKED' && e.target.id !== 'nextBtn') {
+                handleNext();
+            }
+        });
+
+        // initialize on step 1
+        goToStep(1);
+
+        // delegate click events for the Next Step button
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'nextBtn') {
+                handleNext();
+            }
+        });
+
+        // make entire card area clickable too
+        cardDiv.addEventListener('click', function(e) {
+            // ignore clicks on disabled button or the card content itself if blocked
+            if (selectedResident && selectedResident.status !== 'BLOCKED' && e.target.id !== 'nextBtn') {
+                handleNext();
+            }
+        });
+    </script>
+</body>
+</html>

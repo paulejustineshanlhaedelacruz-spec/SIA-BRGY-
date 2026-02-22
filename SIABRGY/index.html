@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barangay DIPS - Document Issuance and Processing System</title>
+    <link rel="stylesheet" href="src/styles/global.css">
+    <link rel="stylesheet" href="src/styles/dashboard.css">
+    <link rel="stylesheet" href="src/styles/document-issuance.css">
+    <link rel="stylesheet" href="src/styles/components.css">
+</head>
+<body>
+    <!-- root container for React -->
+    <div id="root">Loading application...</div>
+    
+    <!-- React and ReactDOM from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/react-dom.production.min.js"></script>
+    
+    <!-- application script -->
+    <script src="src/index.js"></script>
+    
+    <!-- debugging helper and fallback if React fails to load -->
+    <script>
+        if (!window.React || !window.ReactDOM) {
+            console.error('React or ReactDOM not available, inserting static fallback');
+            // Build a more complete static layout replicating dashboard
+            document.getElementById('root').innerHTML = `
+            <div class="dashboard-container">
+                <div class="sidebar">
+                    <div class="sidebar-logo">BD</div>
+                    <a href="dashboard.html" class="sidebar-icon active" title="Dashboard">📊</a>
+                    <a href="issuance.html" class="sidebar-icon" title="Document Issuance">📄</a>
+                    <a href="analytics.html" class="sidebar-icon" title="Analytics">📈</a>
+                    <a href="insights.html" class="sidebar-icon" title="Insights">📊</a>
+                </div>
+                <div class="main-content">
+                    <div class="header">
+                        <div class="header-left">
+                            <div class="header-title">Barangay DIPS</div>
+                            <div class="header-search search-input"><input class="input-field" placeholder="Search residents, documents..."/></div>
+                        </div>
+                        <div class="header-right">
+                            <button class="header-icon-btn" title="Notifications">🔔</button>
+                            <button class="header-icon-btn" title="Settings">⚙️</button>
+                            <div class="avatar">AD</div>
+                        </div>
+                    </div>
+                    <div class="page-content">
+                        <div class="page-header">
+                            <h1>Dashboard</h1>
+                            <p>Mon, February 9, 2026</p>
+                        </div>
+                        <div class="stat-cards-grid">
+                            <div class="stat-card">
+                                <h3>Total Documents Issued</h3>
+                                <div class="stat-card-value">141</div>
+                                <p>+4 vs yesterday</p>
+                            </div>
+                            <div class="stat-card cyan">
+                                <h3>Revenue Collected Today</h3>
+                                <div class="stat-card-value">₱3,550</div>
+                                <p></p>
+                            </div>
+                            <div class="stat-card green">
+                                <h3>Pending Request</h3>
+                                <div class="stat-card-value">8</div>
+                                <p></p>
+                            </div>
+                            <div class="stat-card pink">
+                                <h3>Flagged Residents</h3>
+                                <div class="stat-card-value">2</div>
+                                <p>2 restricted</p>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 350px;gap:var(--spacing-lg);">
+                            <div>
+                                <div class="dashboard-section">
+                                    <div class="section-header">
+                                        <h2 class="section-title">Revenue Trend</h2>
+                                        <select class="input-field" style="width:120px;"><option>Last 7 months</option></select>
+                                    </div>
+                                    <div class="chart-container" style="height:200px;">Line Chart Placeholder</div>
+                                </div>
+                                <div class="dashboard-section">
+                                    <div class="section-header">
+                                        <h2 class="section-title">Document Type Distribution</h2>
+                                        <select class="input-field" style="width:120px;"><option>2 months</option></select>
+                                    </div>
+                                    <div class="chart-container" style="height:200px;">Pie Chart Placeholder</div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="dashboard-section" style="height:100%;">
+                                    <div class="section-header"><h2 class="section-title">Recent Activity</h2></div>
+                                    <div class="activity-list">
+                                        <div class="activity-item"><div class="activity-icon success">✓</div><div class="activity-content"><p class="activity-title">Juan Dela Cruz issued Barangay Clearance — SUCCESS</p><p class="activity-time">2/01/2026</p></div></div>
+                                        <div class="activity-item"><div class="activity-icon info">💳</div><div class="activity-content"><p class="activity-title">Payment recorded for BRGY-2026-00018 — ₱150</p><p class="activity-time">2/01/2026</p></div></div>
+                                        <div class="activity-item"><div class="activity-icon info">💳</div><div class="activity-content"><p class="activity-title">Anne Villanueva issued Certificate of Residency — SUCCESS</p><p class="activity-time">2/01/2026</p></div></div>
+                                        <div class="activity-item"><div class="activity-icon danger">⚠️</div><div class="activity-content"><p class="activity-title">Roberto Augusto attempted Barangay Clearance — RESTRICTED</p><p class="activity-time">2/01/2026</p></div></div>
+                                        <div class="activity-item"><div class="activity-icon danger">⚠️</div><div class="activity-content"><p class="activity-title">Sofia Dizon attempted Business Permit — RESTRICTED</p><p class="activity-time">2/01/2026</p></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-section">
+                            <div class="section-header"><h2 class="section-title">Recent Transactions</h2></div>
+                            <table class="table">
+                                <thead><tr><th>Control #</th><th>Resident Name</th><th>Document Type</th><th>Amount Paid</th><th>Status</th><th>Date & Time</th><th>Actions</th></tr></thead>
+                                <tbody>
+                                    <tr><td>BRGY-001234</td><td>Juan Dela Cruz</td><td>Barangay Clearance</td><td>150</td><td><span class="badge badge-success">Paid</span></td><td>02/01/2026 10:46 AM</td><td><button class="btn btn-primary btn-sm">View</button></td></tr>
+                                    <tr><td>BRGY-001342</td><td>Juan Dela Cruz</td><td>Barangay Clearance</td><td>150</td><td><span class="badge badge-warning">Pending</span></td><td>02/01/2026 10:48 AM</td><td><button class="btn btn-primary btn-sm">View</button></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        } else {
+            console.log('React and ReactDOM loaded successfully');
+        }
+    </script>
+</body>
+</html>

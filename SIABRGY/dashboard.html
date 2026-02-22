@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barangay DIPS - Dashboard</title>
+    <link rel="stylesheet" href="src/styles/global.css">
+    <link rel="stylesheet" href="src/styles/dashboard.css">
+    <link rel="stylesheet" href="src/styles/components.css">
+    <style>
+        /* Modal Styles */
+        body.modal-open {
+            overflow: hidden !important;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            background-color: transparent !important;
+            z-index: 999 !important;
+        }
+
+        .modal.show {
+            display: block !important;
+            z-index: 1000 !important;
+        }
+
+        .modal.show .modal-content {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            z-index: 1001 !important;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+            width: 520px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-left: 5px solid #3B82F6;
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            flex: 1;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            color: #d1d5db;
+            transition: all 0.2s;
+            padding: 0;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .modal-close:hover {
+            color: #1f2937;
+            background-color: #f3f4f6;
+            border-radius: 6px;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 18px;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #4b5563;
+            min-width: 130px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            color: #1f2937;
+            flex: 1;
+            font-size: 14px;
+            word-break: break-word;
+            padding: 6px 12px;
+            background-color: #f9fafb;
+            border-radius: 6px;
+        }
+
+        .detail-value.highlight {
+            font-weight: 700;
+            color: #ffffff;
+            background-color: #3B82F6;
+            font-size: 15px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .modal-btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-btn-primary {
+            background-color: #3B82F6;
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            background-color: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .modal-btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .modal-btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+        }
+
+        .modal-btn-secondary:hover {
+            background-color: #e5e7eb;
+            border-color: #d1d5db;
+        }
+
+        .modal-icon {
+            font-size: 56px;
+            text-align: center;
+            margin-bottom: 20px;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-badge.processing {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-badge.success {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-badge.error {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Header Date Styles */
+        .header-date {
+            font-size: 14px;
+            color: var(--text-gray);
+            margin-right: auto;
+        }
+
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: absolute;
+            top: 60px;
+            right: 16px;
+            background-color: white;
+            border: 1px solid var(--border-gray);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .notification-dropdown.show {
+            display: block;
+        }
+
+        .notification-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--light-gray);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: var(--light-gray);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-header {
+            padding: 12px 16px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-gray);
+        }
+
+        .notification-empty {
+            padding: 16px;
+            text-align: center;
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        /* Sign Out Modal */
+        .signout-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .signout-modal.show {
+            display: flex;
+        }
+
+        .signout-modal-content {
+            background-color: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 400px;
+            max-width: 90vw;
+            text-align: center;
+        }
+
+        .signout-modal-content h2 {
+            margin: 0 0 16px 0;
+            color: #1f2937;
+        }
+
+        .signout-modal-content p {
+            margin: 0 0 24px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .signout-modal-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .signout-modal-buttons button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .signout-btn-cancel {
+            background-color: var(--light-gray);
+            color: var(--text-gray);
+        }
+
+        .signout-btn-cancel:hover {
+            background-color: var(--border-gray);
+        }
+
+        .signout-btn-confirm {
+            background-color: #DC2626;
+            color: white;
+        }
+
+        .signout-btn-confirm:hover {
+            background-color: #991B1B;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="sidebar">
+            <div class="sidebar-logo"><img src="images/BRGYLOGO.png" alt="Barangay Logo" style="width: 100%; height: 100%; object-fit: contain;"></div>
+            <a href="dashboard.html" class="sidebar-icon active" title="Dashboard">📊</a>
+            <a href="issuance.html" class="sidebar-icon" title="Document Issuance">📄</a>
+            <a href="analytics.html" class="sidebar-icon" title="Analytics">📈</a>
+            <a href="insights.html" class="sidebar-icon" title="Insights">📊</a>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <div class="header-left">
+                    <div class="header-title">Barangay DIPS</div>
+                </div>
+                <div class="header-right">
+                    <div class="header-date" id="headerDate">Mon, February 9, 2026</div>
+                    <button class="header-icon-btn" id="notificationBtn" title="Notifications">🔔</button>
+                    <button class="header-icon-btn" id="signOutBtn" title="Sign Out" style="cursor: pointer; position: relative;"><img src="images/BRGYLOGO.png" alt="User Avatar" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;"></button>
+                </div>
+            </div>
+            <div class="page-content">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p>Mon, February 9, 2026</p>
+                </div>
+                <!-- stat card grid -->
+                <div class="stat-cards-grid">
+                    <div class="stat-card" onclick="handleStatCardClick('Document Issued Today')" style="cursor: pointer;">
+                        <h3>Document Issued Today</h3>
+                        <div class="stat-card-value">141</div>
+                        <p>↑ 2 activities</p>
+                    </div>
+                    <div class="stat-card cyan" onclick="handleStatCardClick('Revenue Collected Today')" style="cursor: pointer;">
+                        <h3>Revenue Collected Today</h3>
+                        <div class="stat-card-value">₱3,550</div>
+                        <p>2 payments</p>
+                    </div>
+                    <div class="stat-card green" onclick="handleStatCardClick('Pending Request')" style="cursor: pointer;">
+                        <h3>Pending Request</h3>
+                        <div class="stat-card-value">8</div>
+                        <p>Waiting approval</p>
+                    </div>
+                    <div class="stat-card pink" onclick="handleStatCardClick('Flagged Residents')" style="cursor: pointer;">
+                        <h3>Flagged Residents</h3>
+                        <div class="stat-card-value">2</div>
+                        <p>1 flagged</p>
+                    </div>
+                </div>
+                
+                <!-- charts + activity -->
+                <div style="display: grid; grid-template-columns: 1fr 350px; gap: var(--spacing-lg); margin-bottom: var(--spacing-lg);">
+                    <div>
+                        <!-- revenue -->
+                        <div class="dashboard-section">
+                            <div class="section-header">
+                                <h2 class="section-title">Revenue Trend</h2>
+                                <select class="input-field" style="width: 120px;">
+                                    <option>Last 7 months</option>
+                                    <option>Last 30 days</option>
+                                    <option>This year</option>
+                                </select>
+                            </div>
+                            <div class="chart-container" style="background-color: var(--light-gray); border-radius: var(--radius-md); padding: var(--spacing-lg);">
+                                <svg width="100%" height="300" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
+                                    <!-- Grid lines -->
+                                    <line x1="0" y1="250" x2="360" y2="250" stroke="#E0E0E0" stroke-width="1" />
+                                    <line x1="0" y1="200" x2="360" y2="200" stroke="#E0E0E0" stroke-width="1" />
+                                    <line x1="0" y1="150" x2="360" y2="150" stroke="#E0E0E0" stroke-width="1" />
+                                    <line x1="0" y1="100" x2="360" y2="100" stroke="#E0E0E0" stroke-width="1" />
+                                    <line x1="0" y1="50" x2="360" y2="50" stroke="#E0E0E0" stroke-width="1" />
+                                    
+                                    <!-- Line chart -->
+                                    <polyline points="20,250 60,180 100,200 140,120 180,150 220,100 260,180 300,140 340,160"
+                                        fill="none" stroke="#FF6B6B" stroke-width="2" />
+                                    
+                                    <!-- Points -->
+                                    <circle cx="20" cy="250" r="3" fill="#FF6B6B" />
+                                    <circle cx="60" cy="180" r="3" fill="#FF6B6B" />
+                                    <circle cx="100" cy="200" r="3" fill="#FF6B6B" />
+                                    <circle cx="140" cy="120" r="3" fill="#FF6B6B" />
+                                    <circle cx="180" cy="150" r="3" fill="#FF6B6B" />
+                                    <circle cx="220" cy="100" r="3" fill="#FF6B6B" />
+                                    <circle cx="260" cy="180" r="3" fill="#FF6B6B" />
+                                    <circle cx="300" cy="140" r="3" fill="#FF6B6B" />
+                                    <circle cx="340" cy="160" r="3" fill="#FF6B6B" />
+                                    
+                                    <!-- Month labels -->
+                                    <text x="20" y="280" font-size="12" text-anchor="middle">Jan</text>
+                                    <text x="60" y="280" font-size="12" text-anchor="middle">Feb</text>
+                                    <text x="100" y="280" font-size="12" text-anchor="middle">Mar</text>
+                                    <text x="140" y="280" font-size="12" text-anchor="middle">Apr</text>
+                                    <text x="180" y="280" font-size="12" text-anchor="middle">May</text>
+                                    <text x="220" y="280" font-size="12" text-anchor="middle">Jun</text>
+                                    <text x="260" y="280" font-size="12" text-anchor="middle">Jul</text>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- document distribution -->
+                        <div class="dashboard-section">
+                            <div class="section-header">
+                                <h2 class="section-title">Document Type Distribution</h2>
+                                <select class="input-field" style="width: 120px;">
+                                    <option>2 months</option>
+                                    <option>6 months</option>
+                                    <option>1 year</option>
+                                </select>
+                            </div>
+                            <div class="pie-chart-wrapper">
+                                <svg class="pie-chart" viewBox="0 0 200 200">
+                                    <!-- Blue slice (50%) -->
+                                    <path d="M 100 100 L 180 100 A 80 80 0 0 1 100 20 Z" fill="#3B5FFF" />
+                                    <!-- Yellow slice (15%) -->
+                                    <path d="M 100 100 L 100 20 A 80 80 0 0 1 132.31 32.48 Z" fill="#FFEB3B" />
+                                    <!-- Red slice (25%) -->
+                                    <path d="M 100 100 L 132.31 32.48 A 80 80 0 0 1 180 100 Z" fill="#F44336" />
+                                    <!-- Green slice (10%) -->
+                                    <path d="M 100 100 L 100 20 A 80 80 0 0 0 180 100 Z" fill="#4CAF50" />
+                                </svg>
+                                <div class="chart-legend" style="margin-top: 10px;">
+                                    <div style="margin-bottom: 10px; font-size: 12px; font-weight: bold; display: grid; grid-template-columns: 1fr 60px 40px; gap: 10px; padding-right: 10px;">
+                                        <div>Most requested documents</div>
+                                        <div style="text-align: center;">Count</div>
+                                        <div style="text-align: center;">%</div>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color" style="background-color: #3B5FFF;"></div>
+                                        <div style="display: grid; grid-template-columns: 1fr 60px 40px; gap: 10px; width: 100%; align-items: center;">
+                                            <span class="legend-label">Barangay Residency</span>
+                                            <span style="text-align: center; font-size: 12px;">40</span>
+                                            <span style="text-align: center; font-size: 12px;">50%</span>
+                                        </div>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color" style="background-color: #FFEB3B;"></div>
+                                        <div style="display: grid; grid-template-columns: 1fr 60px 40px; gap: 10px; width: 100%; align-items: center;">
+                                            <span class="legend-label">Barangay Indigency</span>
+                                            <span style="text-align: center; font-size: 12px;">12</span>
+                                            <span style="text-align: center; font-size: 12px;">15%</span>
+                                        </div>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color" style="background-color: #F44336;"></div>
+                                        <div style="display: grid; grid-template-columns: 1fr 60px 40px; gap: 10px; width: 100%; align-items: center;">
+                                            <span class="legend-label">Business Permit</span>
+                                            <span style="text-align: center; font-size: 12px;">20</span>
+                                            <span style="text-align: center; font-size: 12px;">25%</span>
+                                        </div>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color" style="background-color: #4CAF50;"></div>
+                                        <div style="display: grid; grid-template-columns: 1fr 60px 40px; gap: 10px; width: 100%; align-items: center;">
+                                            <span class="legend-label">Others</span>
+                                            <span style="text-align: center; font-size: 12px;">8</span>
+                                            <span style="text-align: center; font-size: 12px;">10%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- activity -->
+                    <div>
+                        <div class="dashboard-section" style="height: 100%;">
+                            <div class="section-header">
+                                <h2 class="section-title">Recent Activity</h2>
+                            </div>
+                            <div class="activity-list">
+                                <div class="activity-item" onclick="handleActivityClick('Aunt Inka Cruz issued Barangay Clearance — SUCCESS')" style="cursor: pointer;">
+                                    <div class="activity-icon success">✓</div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Aunt Inka Cruz issued Barangay Clearance — SUCCESS</p>
+                                        <p class="activity-time">5/25/2025</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item" onclick="handleActivityClick('Payment recorded for DRRT-2025-000078 — ₱150')" style="cursor: pointer;">
+                                    <div class="activity-icon info">💳</div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Payment recorded for DRRT-2025-000078 — ₱150</p>
+                                        <p class="activity-time">5/24/2025</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item" onclick="handleActivityClick('Ame Villarussea issued Certificate of Residency — SUCCESS')" style="cursor: pointer;">
+                                    <div class="activity-icon success">✓</div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Ame Villarussea issued Certificate of Residency — SUCCESS</p>
+                                        <p class="activity-time">5/23/2025</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item" onclick="handleActivityClick('Payment recorded for DRRT-2025-000077 — ₱60')" style="cursor: pointer;">
+                                    <div class="activity-icon info">💳</div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Payment recorded for DRRT-2025-000077 — ₱60</p>
+                                        <p class="activity-time">5/22/2025</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item" onclick="handleActivityClick('Roberto Augusto attempted Barangay Clearance — RESTRICTED')" style="cursor: pointer;">
+                                    <div class="activity-icon danger">⚠️</div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Roberto Augusto attempted Barangay Clearance — RESTRICTED</p>
+                                        <p class="activity-time">5/21/2025</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item" onclick="handleActivityClick('Maria Santos document request created')" style="cursor: pointer;">
+                                    <div class="activity-icon info">📄</div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Maria Santos document request created</p>
+                                        <p class="activity-time">5/20/2025</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item" onclick="handleActivityClick('Sofia Duran attempted Business Permit — RESTRICTED')" style="cursor: pointer;">
+                                    <div class="activity-icon danger">⚠️</div>
+                                    <div class="activity-content">
+                                        <p class="activity-title">Sofia Duran attempted Business Permit — RESTRICTED</p>
+                                        <p class="activity-time">5/19/2025</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- transactions -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Recent Transactions</h2>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" class="checkbox" /></th>
+                                    <th>Control No.</th>
+                                    <th>Resident Name</th>
+                                    <th>Document Type</th>
+                                    <th>Amount Paid</th>
+                                    <th>Status</th>
+                                    <th>Date & Time</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="checkbox" class="checkbox" /></td>
+                                    <td>DRRY-001214</td>
+                                    <td>Juan Dela Cruz</td>
+                                    <td>Barangay Clearance</td>
+                                    <td>₱150.00</td>
+                                    <td><span class="badge badge-warning">Processing</span></td>
+                                    <td>02/01/2026, 10:45 AM</td>
+                                    <td><button class="btn btn-primary btn-sm" onclick="handleViewTransaction('DRRY-001214', 'Juan Dela Cruz', 'Barangay Clearance', '150.00')">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="checkbox" /></td>
+                                    <td>DRRY-001233</td>
+                                    <td>Juan Dela Cruz</td>
+                                    <td>Barangay Clearance</td>
+                                    <td>₱150.00</td>
+                                    <td><span class="badge badge-warning">Processing</span></td>
+                                    <td>02/01/2026, 10:48 AM</td>
+                                    <td><button class="btn btn-primary btn-sm" onclick="handleViewTransaction('DRRY-001233', 'Juan Dela Cruz', 'Barangay Clearance', '150.00')">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="checkbox" /></td>
+                                    <td>DRRY-001232</td>
+                                    <td>Juan Dela Cruz</td>
+                                    <td>Barangay Clearance</td>
+                                    <td>₱150.00</td>
+                                    <td><span class="badge badge-warning">Processing</span></td>
+                                    <td>02/01/2026, 10:48 AM</td>
+                                    <td><button class="btn btn-primary btn-sm" onclick="handleViewTransaction('DRRY-001232', 'Juan Dela Cruz', 'Barangay Clearance', '150.00')">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="checkbox" /></td>
+                                    <td>DRRY-001230</td>
+                                    <td>Juan Dela Cruz</td>
+                                    <td>Barangay Clearance</td>
+                                    <td>₱150.00</td>
+                                    <td><span class="badge badge-warning">Processing</span></td>
+                                    <td>02/01/2026, 10:48 AM</td>
+                                    <td><button class="btn btn-primary btn-sm" onclick="handleViewTransaction('DRRY-001230', 'Juan Dela Cruz', 'Barangay Clearance', '150.00')">View</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="checkbox" class="checkbox" /></td>
+                                    <td>DRRY-001224</td>
+                                    <td>Juan Dela Cruz</td>
+                                    <td>Barangay Clearance</td>
+                                    <td>₱150.00</td>
+                                    <td><span class="badge badge-warning">Processing</span></td>
+                                    <td>02/01/2026, 10:48 AM</td>
+                                    <td><button class="btn btn-primary btn-sm" onclick="handleViewTransaction('DRRY-001224', 'Juan Dela Cruz', 'Barangay Clearance', '150.00')">View</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details Modal -->
+    <div id="transactionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">💳 Transaction Details</h2>
+                <button class="modal-close" onclick="closeModal('transactionModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row">
+                    <span class="detail-label">Control No.:</span>
+                    <span class="detail-value highlight" id="trans-id"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Resident:</span>
+                    <span class="detail-value" id="trans-name"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Document Type:</span>
+                    <span class="detail-value" id="trans-type"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Amount Paid:</span>
+                    <span class="detail-value highlight" id="trans-amount"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value" id="trans-status"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeModal('transactionModal')">Close</button>
+                <button class="modal-btn modal-btn-primary" onclick="printTransaction()">Print</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Details Modal -->
+    <div id="activityModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📋 Activity Details</h2>
+                <button class="modal-close" onclick="closeModal('activityModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px;">
+                    <p style="font-size: 16px; font-weight: 600; color: #1f2937; margin: 0 0 12px 0;" id="activity-title"></p>
+                    <p style="font-size: 14px; color: #6b7280; margin: 0;" id="activity-time"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-primary" onclick="closeModal('activityModal')">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stat Card Details Modal -->
+    <div id="statCardModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="stat-title"></h2>
+                <button class="modal-close" onclick="closeModal('statCardModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <p style="font-size: 48px; margin: 0 0 16px 0;" id="stat-icon"></p>
+                    <p style="font-size: 32px; font-weight: 700; color: #3B82F6; margin: 0;" id="stat-value"></p>
+                </div>
+                <div id="stat-details"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-primary" onclick="closeModal('statCardModal')">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                // Close any other open modals first
+                document.querySelectorAll('.modal.show').forEach(m => {
+                    if (m.id !== modalId) {
+                        m.classList.remove('show');
+                    }
+                });
+                // Open the target modal
+                modal.classList.add('show');
+                document.body.classList.add('modal-open');
+            }
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('show');
+                // Check if any other modals are still open
+                const anyModalOpen = document.querySelectorAll('.modal.show').length > 0;
+                if (!anyModalOpen) {
+                    document.body.classList.remove('modal-open');
+                }
+            }
+        }
+
+        // Close modal when clicking outside of it (on the backdrop)
+        document.addEventListener('click', function(event) {
+            if (event.target.classList && event.target.classList.contains('modal') && event.target.classList.contains('show')) {
+                event.target.classList.remove('show');
+                const anyModalOpen = document.querySelectorAll('.modal.show').length > 0;
+                if (!anyModalOpen) {
+                    document.body.classList.remove('modal-open');
+                }
+            }
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const openDisplay = document.querySelector('.modal.show');
+                if (openDisplay) {
+                    const openModals = document.querySelectorAll('.modal.show');
+                    openModals.forEach(modal => {
+                        modal.classList.remove('show');
+                    });
+                    document.body.classList.remove('modal-open');
+                }
+            }
+        });
+
+        // Dashboard functionality
+        function handleStatCardClick(cardTitle) {
+            console.log(`Stat card clicked: ${cardTitle}`);
+            const stats = {
+                'Document Issued Today': {
+                    icon: '📄',
+                    value: '141',
+                    details: [
+                        { label: 'Documents Issued', value: '141' },
+                        { label: 'New Activities', value: '2' },
+                        { label: 'Growth', value: '↑ 2 vs yesterday' }
+                    ]
+                },
+                'Revenue Collected Today': {
+                    icon: '💰',
+                    value: '₱3,550',
+                    details: [
+                        { label: 'Total Revenue', value: '₱3,550' },
+                        { label: 'Transactions', value: '2 payments' },
+                        { label: 'Average', value: '₱1,775 per transaction' }
+                    ]
+                },
+                'Pending Request': {
+                    icon: '⏳',
+                    value: '8',
+                    details: [
+                        { label: 'Total Requests', value: '8' },
+                        { label: 'Status', value: 'Waiting for approval' },
+                        { label: 'Priority', value: 'High' }
+                    ]
+                },
+                'Flagged Residents': {
+                    icon: '🚩',
+                    value: '2',
+                    details: [
+                        { label: 'Total Flagged', value: '2' },
+                        { label: 'Requires Review', value: '1' },
+                        { label: 'Status', value: 'Requires attention' }
+                    ]
+                }
+            };
+
+            const stat = stats[cardTitle];
+            if (stat) {
+                document.getElementById('stat-title').textContent = cardTitle;
+                document.getElementById('stat-icon').textContent = stat.icon;
+                document.getElementById('stat-value').textContent = stat.value;
+                
+                const detailsHtml = stat.details.map(d => `
+                    <div class="detail-row">
+                        <span class="detail-label">${d.label}:</span>
+                        <span class="detail-value">${d.value}</span>
+                    </div>
+                `).join('');
+                document.getElementById('stat-details').innerHTML = detailsHtml;
+                
+                openModal('statCardModal');
+            }
+        }
+
+        function handleActivityClick(activityTitle) {
+            console.log('Activity clicked:', activityTitle);
+            document.getElementById('activity-title').textContent = activityTitle;
+            document.getElementById('activity-time').textContent = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+            openModal('activityModal');
+        }
+
+        function handleViewTransaction(id, name, docType, amount) {
+            console.log(`Viewing transaction: ${id}`);
+            document.getElementById('trans-id').textContent = id;
+            document.getElementById('trans-name').textContent = name;
+            document.getElementById('trans-type').textContent = docType;
+            document.getElementById('trans-amount').textContent = '₱' + amount;
+            document.getElementById('trans-status').innerHTML = '<span class="status-badge processing">Processing</span>';
+            openModal('transactionModal');
+        }
+
+        function printTransaction() {
+            const controlNo = document.getElementById('trans-id').textContent;
+            const residentName = document.getElementById('trans-name').textContent;
+            const docType = document.getElementById('trans-type').textContent;
+            const amount = document.getElementById('trans-amount').textContent;
+            
+            const printContent = `
+                <html>
+                    <head>
+                        <title>Transaction Receipt - ${controlNo}</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 20px; }
+                            .receipt { max-width: 400px; margin: 0 auto; }
+                            .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+                            .details { margin: 20px 0; }
+                            .detail-row { display: flex; justify-content: space-between; margin: 10px 0; }
+                            .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="receipt">
+                            <div class="header">
+                                <h2>Barangay DIPS</h2>
+                                <p>Transaction Receipt</p>
+                            </div>
+                            <div class="details">
+                                <div class="detail-row"><strong>Control No.:</strong> <span>${controlNo}</span></div>
+                                <div class="detail-row"><strong>Resident:</strong> <span>${residentName}</span></div>
+                                <div class="detail-row"><strong>Document Type:</strong> <span>${docType}</span></div>
+                                <div class="detail-row"><strong>Amount Paid:</strong> <span>${amount}</span></div>
+                            </div>
+                            <div class="footer">
+                                <p>Printed on: ${new Date().toLocaleString()}</p>
+                            </div>
+                        </div>
+                    </body>
+                </html>
+            `;
+            
+            const printWindow = window.open('', '', 'width=600,height=400');
+            printWindow.document.write(printContent);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        // Add hover effects to stat cards
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 8px 16px rgba(0,0,0,0.15)';
+                this.style.transition = 'transform 0.2s, box-shadow 0.2s';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'var(--shadow-sm)';
+            });
+        });
+
+        // Add hover effects to activity items
+        document.querySelectorAll('.activity-item').forEach(item => {
+            item.addEventListener('mouseenter', function() {
+                this.style.backgroundColor = '#f5f5f5';
+                this.style.transition = 'background-color 0.2s';
+            });
+            item.addEventListener('mouseleave', function() {
+                this.style.backgroundColor = 'transparent';
+            });
+        });
+
+        // Header functionality
+        function updateHeaderDate() {
+            const options = { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            const formattedDate = today.toLocaleDateString('en-US', options);
+            const headerDate = document.getElementById('headerDate');
+            if (headerDate) {
+                headerDate.textContent = formattedDate;
+            }
+        }
+
+        // Notification functionality
+        document.getElementById('notificationBtn')?.addEventListener('click', function() {
+            const dropdown = document.getElementById('notificationDropdown') || createNotificationDropdown();
+            dropdown.classList.toggle('show');
+        });
+
+        function createNotificationDropdown() {
+            const dropdown = document.createElement('div');
+            dropdown.id = 'notificationDropdown';
+            dropdown.className = 'notification-dropdown';
+            dropdown.innerHTML = `
+                <div class="notification-header">Notifications</div>
+                <div class="notification-item">
+                    <strong>New Document Request</strong>
+                    <p>Carlo Mendoza requested a Business Permit</p>
+                </div>
+                <div class="notification-item">
+                    <strong>Payment Received</strong>
+                    <p>Rosa Lim paid ₱50 for Cedula</p>
+                </div>
+                <div class="notification-item">
+                    <strong>Document Approved</strong>
+                    <p>Mark Tan's Building Permit was approved</p>
+                </div>
+            `;
+            document.querySelector('.header-right')?.appendChild(dropdown);
+            dropdown.addEventListener('click', function(e) {
+                if (e.target !== this && e.target.closest('.notification-item')) {
+                    dropdown.classList.remove('show');
+                }
+            });
+            return dropdown;
+        }
+
+        // Sign out functionality
+        document.getElementById('signOutBtn')?.addEventListener('click', function() {
+            const modal = document.getElementById('signOutModal') || createSignOutModal();
+            modal.classList.add('show');
+        });
+
+        function createSignOutModal() {
+            const modal = document.createElement('div');
+            modal.id = 'signOutModal';
+            modal.className = 'signout-modal';
+            modal.innerHTML = `
+                <div class="signout-modal-content">
+                    <h2>Sign Out</h2>
+                    <p>Are you sure you want to sign out?</p>
+                    <div class="signout-modal-buttons">
+                        <button class="signout-btn-cancel" onclick="document.getElementById('signOutModal').classList.remove('show')">Cancel</button>
+                        <button class="signout-btn-confirm" onclick="window.location.href='index.html'">Sign Out</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+            return modal;
+        }
+
+        // Close notification dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('notificationDropdown');
+            const notificationBtn = document.getElementById('notificationBtn');
+            if (dropdown && !dropdown.contains(e.target) && !notificationBtn.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Initialize
+        updateHeaderDate();
+    </script>
+</body>
+</html>
